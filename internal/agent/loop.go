@@ -13,12 +13,16 @@ import (
 )
 
 type ConversationLoop struct {
-	manager     *Manager
-	sessions    *SessionManager
-	registry    *model.Registry
-	router      *model.Router
-	toolReg     *tool.Registry
+	manager      *Manager
+	sessions     *SessionManager
+	registry     *model.Registry
+	router       *model.Router
+	toolReg      *tool.Registry
 	tokenTracker *model.TokenTracker
+}
+
+func (cl *ConversationLoop) Sessions() *SessionManager {
+	return cl.sessions
 }
 
 func NewConversationLoop(

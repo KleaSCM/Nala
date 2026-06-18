@@ -28,6 +28,8 @@ import (
 	"github.com/KleaSCM/nala/internal/logger"
 	"github.com/KleaSCM/nala/internal/memory"
 	"github.com/KleaSCM/nala/internal/model"
+	"github.com/KleaSCM/nala/internal/pipeline"
+	"github.com/KleaSCM/nala/internal/scheduler"
 	"github.com/KleaSCM/nala/internal/tool"
 )
 
@@ -44,6 +46,8 @@ type Engine struct {
 	TokenTracker     *model.TokenTracker
 	ToolRegistry     *tool.Registry
 	MemoryManager    *memory.Manager
+	PipelineEngine   *pipeline.Engine
+	Scheduler        *scheduler.Scheduler
 
 	cancel        context.CancelFunc
 	sigWg         sync.WaitGroup
@@ -53,6 +57,45 @@ type Engine struct {
 
 func (e *Engine) SetOnFatal(fn func(msg string)) {
 	e.onFatal = fn
+}
+
+type agentExecutor struct {
+	loop *agent.ConversationLoop
+}
+
+func (a *agentExecutor) ExecuteTask(ctx context.Context, agentID, task string, contextData map[string]any) (string, error) {
+	if a.loop == nil {
+		return "", fmt.Errorf("conversation loop not available")
+	}
+
+	sm := a.loop.Sessions()
+	if sm == nil {
+		return "", fmt.Errorf("session manager not available")
+	}
+
+	session := &agent.Session{
+		AgentID: agentID,
+		Title:   truncateText(task, 100),
+		Status:  "active",
+	}
+	if err := sm.Create(session); err != nil {
+		return "", fmt.Errorf("create session: %w", err)
+	}
+
+	result, err := a.loop.ProcessMessage(ctx, session.ID, task)
+	if err != nil {
+		return "", fmt.Errorf("process task: %w", err)
+	}
+
+	return result.Message, nil
+}
+
+func truncateText(s string, maxLen int) string {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
+		return s
+	}
+	return string(runes[:maxLen])
 }
 
 func New() (*Engine, error) {
@@ -86,7 +129,17 @@ func New() (*Engine, error) {
 	agentMgr := agent.NewManager(database)
 	sessionMgr := agent.NewSessionManager(database)
 	memMgr := memory.New(database)
+	pipelineEng := pipeline.NewEngine()
 	loop := agent.NewConversationLoop(agentMgr, sessionMgr, modelReg, router, toolReg, tokenTracker)
+
+	// Pipeline agent registry for delegation
+	pipelineRegistry := map[string]pipeline.AgentExecutor{
+		"orchestrator": pipeline.NewOrchestrator(pipelineEng).CreateOrchestratorAgent(),
+		"default":      &agentExecutor{loop: loop},
+	}
+	for slug, executor := range pipelineRegistry {
+		pipelineEng.RegisterAgent(slug, executor)
+	}
 
 	if err := modelReg.Register(model.NewOllamaProvider("")); err != nil {
 		log.Warn("engine: ollama registration", "error", err)
@@ -158,6 +211,16 @@ func New() (*Engine, error) {
 		},
 	}
 
+	agentDelegate := tool.AgentDelegate{
+		DelegateFn: func(ctx context.Context, agentID, task string, contextData map[string]any) (string, error) {
+			executor, ok := pipelineRegistry[agentID]
+			if !ok {
+				return "", fmt.Errorf("agent %q not found", agentID)
+			}
+			return executor.ExecuteTask(ctx, agentID, task, contextData)
+		},
+	}
+
 	toolReg.RegisterMany(
 		tool.WebSearch{},
 		tool.WebFetch{},
@@ -191,7 +254,14 @@ func New() (*Engine, error) {
 		tool.SystemProcesses{},
 		tool.SystemLogs{LogDir: cfg.Core.LogFile},
 		tool.SystemNotify{},
+		agentDelegate,
 	)
+
+	// Initialize scheduler
+	sched := scheduler.New(database, &agentExecutor{loop: loop})
+	if err := sched.LoadFromDB(context.Background()); err != nil {
+		log.Warn("engine: scheduler load", "error", err)
+	}
 
 	return &Engine{
 		Config:           cfg,
@@ -205,6 +275,8 @@ func New() (*Engine, error) {
 		SessionManager:   sessionMgr,
 		ConversationLoop: loop,
 		MemoryManager:    memMgr,
+		PipelineEngine:   pipelineEng,
+		Scheduler:        sched,
 	}, nil
 }
 

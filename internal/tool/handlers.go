@@ -2783,6 +2783,60 @@ func (SystemNotify) ValidateArgs(args json.RawMessage) error {
 	return nil
 }
 
+// ── agent.delegate ─────────────────────────────────────────────────────
+
+type AgentDelegate struct {
+	DelegateFn func(ctx context.Context, agentID, task string, contextData map[string]any) (string, error)
+}
+
+func (AgentDelegate) ID() string          { return "agent.delegate" }
+func (AgentDelegate) Name() string        { return "Delegate to Agent" }
+func (AgentDelegate) Description() string { return "Delegate a task to another agent" }
+
+func (AgentDelegate) ParameterSchema() json.RawMessage {
+	return json.RawMessage(`{
+		"type": "object",
+		"properties": {
+			"agent_id": {"type": "string", "description": "Agent slug to delegate to"},
+			"task": {"type": "string", "description": "Task to delegate"},
+			"async": {"type": "boolean", "default": false}
+		},
+		"required": ["agent_id", "task"]
+	}`)
+}
+
+type agentDelegateArgs struct {
+	AgentID string `json:"agent_id"`
+	Task    string `json:"task"`
+	Async   bool   `json:"async"`
+}
+
+func (d AgentDelegate) Execute(ctx context.Context, args json.RawMessage) (*Result, error) {
+	var p agentDelegateArgs
+	if err := json.Unmarshal(args, &p); err != nil {
+		return nil, fmt.Errorf("agent.delegate: invalid args: %w", err)
+	}
+	if d.DelegateFn != nil {
+		result, err := d.DelegateFn(ctx, p.AgentID, p.Task, nil)
+		if err != nil {
+			return &Result{Content: fmt.Sprintf("Delegation failed: %v", err)}, nil
+		}
+		return &Result{Success: true, Content: result}, nil
+	}
+	return &Result{Content: fmt.Sprintf("Agent %q not available (delegate function not configured)", p.AgentID)}, nil
+}
+
+func (AgentDelegate) ValidateArgs(args json.RawMessage) error {
+	var p agentDelegateArgs
+	if err := json.Unmarshal(args, &p); err != nil {
+		return err
+	}
+	if p.AgentID == "" || p.Task == "" {
+		return fmt.Errorf("agent_id and task are required")
+	}
+	return nil
+}
+
 // ── Helper: check if tool struct implements Tool ──────────────────────
 
 var (
@@ -2818,6 +2872,7 @@ var (
 	_ Tool = (*SystemProcesses)(nil)
 	_ Tool = (*SystemLogs)(nil)
 	_ Tool = (*SystemNotify)(nil)
+	_ Tool = (*AgentDelegate)(nil)
 )
 
 // ── External embedder for token counting ──────────────────────────────

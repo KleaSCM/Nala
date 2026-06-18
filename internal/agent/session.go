@@ -237,6 +237,27 @@ func joinConditions(conds []string) string {
 	return result
 }
 
+func (sm *SessionManager) GetMessages(sessionID string) ([]Message, error) {
+	rows, err := sm.db.Query(
+		`SELECT id, session_id, role, content, model, provider, tokens_in, tokens_out, created_at
+		 FROM messages WHERE session_id = ? ORDER BY created_at ASC`, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []Message
+	for rows.Next() {
+		var msg Message
+		if err := rows.Scan(&msg.ID, &msg.SessionID, &msg.Role, &msg.Content,
+			&msg.Model, &msg.Provider, &msg.TokensIn, &msg.TokensOut, &msg.CreatedAt); err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+	return messages, rows.Err()
+}
+
 type rateLimiter struct {
 	mu       sync.Mutex
 	windows  map[string]*slidingWindow
