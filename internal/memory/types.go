@@ -1,3 +1,14 @@
+/**
+ * Memory and knowledge base domain types.
+ * メモリとナレッジベースのドメインタイプね。
+ *
+ * Defines KnowledgeBase and Document for RAG pipeline document storage.
+ * RAGパイプラインのドキュメント保存用のKnowledgeBaseとDocumentを定義してるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package memory
 
 type KnowledgeBase struct {

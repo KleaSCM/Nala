@@ -1,3 +1,14 @@
+/**
+ * Shared database type definitions.
+ * データベースの共有タイプ定義ね。
+ *
+ * Defines AuditLogEntry and shared utility types used across subsystems.
+ * AuditLogEntryと各サブシステムで使う共有ユーティリティタイプを定義してるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package db
 
 type AuditLogEntry struct {

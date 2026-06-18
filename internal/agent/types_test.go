@@ -1,3 +1,16 @@
+/**
+ * Validation tests for agent domain types.
+ * エージェントドメインタイプのバリデーションテストね。
+ *
+ * Covers every constraint on Agent, Session, Message, and ToolBinding
+ * fields: required ranges, format patterns, and edge cases.
+ * Agent、Session、Message、ToolBindingの各フィールドの制約 — 範囲、フォーマット、
+ * エッジケース — をすべてカバーしてるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package agent
 
 import "testing"

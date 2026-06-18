@@ -1,3 +1,14 @@
+/**
+ * Scheduled task types for cron-based agent execution.
+ * スケジュールタスクタイプ — cronベースのエージェント実行用ね。
+ *
+ * Defines ScheduledTask with cron expression and run tracking.
+ * cron式と実行追跡機能付きのScheduledTaskを定義してるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package scheduler
 
 type ScheduledTask struct {

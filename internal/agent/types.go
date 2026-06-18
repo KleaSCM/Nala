@@ -1,3 +1,16 @@
+/**
+ * Core domain types for the agent subsystem.
+ * エージェントサブシステムのコアドメインタイプね。
+ *
+ * Defines Agent, Session, Message, ToolBinding, and related value types
+ * with validation. These map 1:1 to the SQL tables in migration 001-004.
+ * Agent、Session、Message、ToolBinding、および関連する値タイプを定義してるの。
+ * マイグレーション001〜004のSQLテーブルと1:1対応してるわ。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package agent
 
 import (

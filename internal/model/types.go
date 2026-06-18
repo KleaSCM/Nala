@@ -1,3 +1,15 @@
+/**
+ * Provider configuration types for model integration.
+ * モデル連携のプロバイダ設定タイプね。
+ *
+ * Defines ProviderConfig and ProviderType for managing LLM provider
+ * connections (Ollama, OpenAI, Anthropic, custom).
+ * Ollama、OpenAI、Anthropic、カスタムのLLMプロバイダ接続を管理するのよ。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package model
 
 type ProviderConfig struct {

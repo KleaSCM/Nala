@@ -1,3 +1,14 @@
+/**
+ * Validation tests for provider configuration types.
+ * プロバイダ設定タイプのバリデーションテストね。
+ *
+ * Covers ProviderType validity checks and ProviderConfig defaults.
+ * ProviderTypeの有効性チェックとProviderConfigのデフォルト値をカバーしてるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package model
 
 import "testing"

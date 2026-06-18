@@ -1,3 +1,16 @@
+/**
+ * Tests for config hot-reload and concurrent access.
+ * 設定のホットリロードと並行アクセスのテストね。
+ *
+ * Covers safe/unsafe field classification, reload callbacks,
+ * concurrent Get/Set safety, and watcher lifecycle.
+ * セーフ/アンセーフフィールドの分類、リロードコールバック、
+ * 並行Get/Setの安全性、ウォッチャーのライフサイクルをカバーしてるの。
+ *
+ * Author: KleaSCM
+ * Email: KleaSCM@gmail.com
+ */
+
 package config
 
 import (
