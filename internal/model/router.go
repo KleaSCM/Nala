@@ -54,16 +54,16 @@ func NewRouter(registry *Registry) *Router {
 
 func defaultRoutingRules() []RoutingRule {
 	return []RoutingRule{
-		{Intent: IntentCode, Provider: "ollama", Model: "qwen2.5-coder:1.5b", Priority: 10},
+		{Intent: IntentCode, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
 		{Intent: IntentCode, Provider: "openai", Model: "gpt-4o-mini", Priority: 5},
-		{Intent: IntentReasoning, Provider: "openai", Model: "o3-mini", Priority: 10},
-		{Intent: IntentReasoning, Provider: "ollama", Model: "qwen3.5:9b", Priority: 5},
-		{Intent: IntentCreative, Provider: "ollama", Model: "dolphin-phi:latest", Priority: 10},
-		{Intent: IntentSecurity, Provider: "ollama", Model: "gemma-4-heretic", Priority: 10},
-		{Intent: IntentChat, Provider: "ollama", Model: "qwen3.5:9b", Priority: 10},
+		{Intent: IntentReasoning, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
+		{Intent: IntentReasoning, Provider: "openai", Model: "gpt-4o-mini", Priority: 5},
+		{Intent: IntentCreative, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
+		{Intent: IntentSecurity, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
+		{Intent: IntentChat, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
 		{Intent: IntentChat, Provider: "openai", Model: "gpt-4o-mini", Priority: 5},
-		{Intent: IntentTool, Provider: "ollama", Model: "mistral-nemo:latest", Priority: 10},
-		{Intent: IntentUnknown, Provider: "ollama", Model: "qwen3.5:9b", Priority: 10},
+		{Intent: IntentTool, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
+		{Intent: IntentUnknown, Provider: "ollama", Model: "llama3.2:3b", Priority: 10},
 	}
 }
 
@@ -140,15 +140,15 @@ func (r *Router) Route(ctx context.Context, req ChatRequest) (string, string, er
 	}
 
 	for _, rule := range matchedRules {
-		if _, err := r.registry.Get(rule.Provider); err == nil {
-			return rule.Provider, rule.Model, nil
+		if provider, err := r.checkProvider(rule.Provider, rule.Model, ctx); err == nil {
+			return provider, rule.Model, nil
 		}
 	}
 
 	for _, rule := range r.rules {
 		if rule.Intent == IntentUnknown {
-			if _, err := r.registry.Get(rule.Provider); err == nil {
-				return rule.Provider, rule.Model, nil
+			if provider, err := r.checkProvider(rule.Provider, rule.Model, ctx); err == nil {
+				return provider, rule.Model, nil
 			}
 		}
 	}
@@ -172,6 +172,44 @@ func (r *Router) ChatStream(ctx context.Context, req ChatRequest) (<-chan Stream
 	}
 	req.Model = modelName
 	return r.registry.ChatStream(ctx, providerID, req)
+}
+
+func (r *Router) checkProvider(providerID, modelName string, ctx context.Context) (string, error) {
+	p, err := r.registry.Get(providerID)
+	if err != nil {
+		return "", err
+	}
+	models, err := p.ListModels(ctx)
+	if err != nil || len(models) == 0 {
+		return "", fmt.Errorf("no models available from %s", providerID)
+	}
+	for _, m := range models {
+		if m.ID == modelName {
+			return providerID, nil
+		}
+	}
+	rules := r.rules
+	for i := range rules {
+		if rules[i].Provider == providerID {
+			rules[i].Model = models[0].ID
+		}
+	}
+	return providerID, nil
+}
+
+func (r *Router) DiscoverModels(ctx context.Context) {
+	for _, p := range r.registry.List() {
+		models, err := p.ListModels(ctx)
+		if err != nil || len(models) == 0 {
+			continue
+		}
+		firstID := models[0].ID
+		for i, rule := range r.rules {
+			if rule.Provider == p.ID() && rule.Priority > 0 {
+				r.rules[i].Model = firstID
+			}
+		}
+	}
 }
 
 func messagesText(msgs []Message) string {

@@ -11,10 +11,10 @@ TAGS ?= webkit2_41
 GDK_BACKEND ?= x11
 
 dev:
-	GDK_BACKEND=$(GDK_BACKEND) wails dev -tags $(TAGS)
+	GDK_BACKEND=$(GDK_BACKEND) WEBKIT_DISABLE_COMPOSITING_MODE=1 wails dev -tags $(TAGS)
 
 build:
-	GDK_BACKEND=$(GDK_BACKEND) wails build -o $(BUILD_DIR)/nala -tags $(TAGS)
+	GDK_BACKEND=$(GDK_BACKEND) WEBKIT_DISABLE_COMPOSITING_MODE=1 wails build -o $(BUILD_DIR)/nala -tags $(TAGS)
 
 build-all:
 	$(GO) build -o $(BUILD_DIR)/nalad ./cmd/nalad/

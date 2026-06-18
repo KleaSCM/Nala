@@ -84,6 +84,10 @@ func New() (*Engine, error) {
 	sessionMgr := agent.NewSessionManager(database)
 	loop := agent.NewConversationLoop(agentMgr, sessionMgr, modelReg, router, toolReg, tokenTracker)
 
+	if err := modelReg.Register(model.NewOllamaProvider("")); err != nil {
+		log.Warn("engine: ollama registration", "error", err)
+	}
+
 	return &Engine{
 		Config:           cfg,
 		Logger:           log,
@@ -116,6 +120,8 @@ func (e *Engine) Start() error {
 	if e.SessionManager != nil {
 		go e.SessionManager.CheckExpiry(ctx)
 	}
+
+	e.Router.DiscoverModels(ctx)
 
 	return nil
 }
