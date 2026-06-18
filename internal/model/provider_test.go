@@ -58,7 +58,7 @@ func TestMessageConstruction(t *testing.T) {
 func TestChatResponseHasFields(t *testing.T) {
 	resp := &ChatResponse{
 		Message:  Message{Role: "assistant", Content: "hi"},
-		Usage:    TokenUsage{InputTokens: 10, OutputTokens: 20},
+		Usage:    TokenUsage{InputTokens: 10, OutputTokens: 20, TotalTokens: 30},
 		Model:    "test-model",
 		Provider: "test-provider",
 	}
