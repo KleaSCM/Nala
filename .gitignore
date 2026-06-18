@@ -1,0 +1,22 @@
+build/
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+
+# Wails
+frontend/node_modules/
+frontend/dist/
+frontend/.svelte-kit/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
