@@ -21,9 +21,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/KleaSCM/nala/internal/agent"
 	"github.com/KleaSCM/nala/internal/config"
 	"github.com/KleaSCM/nala/internal/db"
 	"github.com/KleaSCM/nala/internal/logger"
+	"github.com/KleaSCM/nala/internal/model"
+	"github.com/KleaSCM/nala/internal/tool"
 )
 
 type Engine struct {
@@ -31,10 +34,18 @@ type Engine struct {
 	Logger *logger.Logger
 	DB     *sql.DB
 
+	AgentManager     *agent.Manager
+	SessionManager   *agent.SessionManager
+	ConversationLoop *agent.ConversationLoop
+	ModelRegistry    *model.Registry
+	Router           *model.Router
+	TokenTracker     *model.TokenTracker
+	ToolRegistry     *tool.Registry
+
 	cancel        context.CancelFunc
 	sigWg         sync.WaitGroup
 	onFatal       func(msg string)
-	shutdownDelay time.Duration // for testing — simulates slow cleanup
+	shutdownDelay time.Duration
 }
 
 func (e *Engine) SetOnFatal(fn func(msg string)) {
@@ -65,10 +76,25 @@ func New() (*Engine, error) {
 		log.Warn("config: hot-reload not available", "error", err)
 	}
 
+	modelReg := model.NewRegistry()
+	toolReg := tool.NewRegistry()
+	router := model.NewRouter(modelReg)
+	tokenTracker := model.NewTokenTracker()
+	agentMgr := agent.NewManager(database)
+	sessionMgr := agent.NewSessionManager(database)
+	loop := agent.NewConversationLoop(agentMgr, sessionMgr, modelReg, router, toolReg, tokenTracker)
+
 	return &Engine{
-		Config: cfg,
-		Logger: log,
-		DB:     database,
+		Config:           cfg,
+		Logger:           log,
+		DB:               database,
+		ModelRegistry:    modelReg,
+		ToolRegistry:     toolReg,
+		Router:           router,
+		TokenTracker:     tokenTracker,
+		AgentManager:     agentMgr,
+		SessionManager:   sessionMgr,
+		ConversationLoop: loop,
 	}, nil
 }
 
@@ -86,6 +112,10 @@ func (e *Engine) Start() error {
 		defer e.sigWg.Done()
 		e.handleSignals(ctx)
 	}()
+
+	if e.SessionManager != nil {
+		go e.SessionManager.CheckExpiry(ctx)
+	}
 
 	return nil
 }

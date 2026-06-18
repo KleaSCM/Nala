@@ -129,9 +129,9 @@ The system models **agents as concurrent processes**, not sequential pipelines. 
 - [ ] Loads configuration on startup
 - [ ] Initializes logger (zap)
 - [ ] Opens database (SQLite + migrations)
-- [ ] Initializes model router (loads providers from DB)
-- [ ] Initializes tool registry (registers built-in tools)
-- [ ] Initializes agent manager
+- [x] Initializes model router (loads providers from DB)
+- [x] Initializes tool registry (registers built-in tools)
+- [x] Initializes agent manager
 - [ ] Initializes memory manager
 - [ ] Initializes pipeline engine
 - [ ] Initializes scheduler (loads cron tasks from DB)
@@ -1413,90 +1413,90 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 6.1 Agent Manager
 
-- [ ] `Manager.Create()` validates + inserts
-- [ ] `Manager.Get()` by ID
-- [ ] `Manager.GetBySlug()` by slug
-- [ ] `Manager.Update()` validates + updates
-- [ ] `Manager.Delete()` cascade to sessions
-- [ ] `Manager.List()` with filters
-- [ ] Slug auto-generated from name
-- [ ] Slug manually overrideable
-- [ ] Test: CRUD operations
-- [ ] Test: duplicate slug (auto-append number)
+- [x] `Manager.Create()` validates + inserts
+- [x] `Manager.Get()` by ID
+- [x] `Manager.GetBySlug()` by slug
+- [x] `Manager.Update()` validates + updates
+- [x] `Manager.Delete()` cascade to sessions
+- [x] `Manager.List()` with filters
+- [x] Slug auto-generated from name
+- [x] Slug manually overrideable
+- [x] Test: CRUD operations
+- [x] Test: duplicate slug (auto-append number)
 
 ### 6.2 Session Lifecycle
 
-- [ ] `CreateSession()` creates + inserts
-- [ ] `GetSession()` retrieves
-- [ ] `ListSessions()` filterable
-- [ ] `PauseSession()` save state, cancel goroutine
-- [ ] `ResumeSession()` restore state, start goroutine
-- [ ] `DeleteSession()` cascade delete
-- [ ] Session TTL: paused 7d, completed 30d, error 7d
-- [ ] Expiry check: startup + every hour
-- [ ] Auto-title from first user message
-- [ ] Test: create → pause → resume
-- [ ] Test: session expiry
+- [x] `CreateSession()` creates + inserts
+- [x] `GetSession()` retrieves
+- [x] `ListSessions()` filterable
+- [x] `PauseSession()` save state, cancel goroutine
+- [x] `ResumeSession()` restore state, start goroutine
+- [x] `DeleteSession()` cascade delete
+- [x] Session TTL: paused 7d, completed 30d, error 7d
+- [x] Expiry check: startup + every hour
+- [x] Auto-title from first user message
+- [x] Test: create → pause → resume
+- [x] Test: session expiry
 
 ### 6.3 System Prompt Templating
 
-- [ ] `{{date}}` — current date
-- [ ] `{{time}}` — current time
-- [ ] `{{datetime}}` — full datetime with TZ
-- [ ] `{{user_name}}` — from settings
-- [ ] `{{tools}}` — auto-generated tool catalog
-- [ ] `{{tool_count}}` — number of tools
-- [ ] `{{knowledge_bases}}` — KB names
-- [ ] `{{session_id}}` — current session
-- [ ] `{{agent_name}}` — agent's name
-- [ ] Custom variables from metadata
-- [ ] Unknown → left as-is
-- [ ] Test: all built-in variables replaced
-- [ ] Test: custom variables replaced
+- [x] `{{date}}` — current date
+- [x] `{{time}}` — current time
+- [x] `{{datetime}}` — full datetime with TZ
+- [x] `{{user_name}}` — from settings
+- [x] `{{tools}}` — auto-generated tool catalog
+- [x] `{{tool_count}}` — number of tools
+- [x] `{{knowledge_bases}}` — KB names
+- [x] `{{session_id}}` — current session
+- [x] `{{agent_name}}` — agent's name
+- [x] Custom variables from metadata
+- [x] Unknown → left as-is
+- [x] Test: all built-in variables replaced
+- [x] Test: custom variables replaced
 
 ### 6.4 Personality Presets
 
-- [ ] `default`: "You are a helpful AI assistant."
-- [ ] `helpful`: "Be concise but thorough."
-- [ ] `creative`: "Be imaginative and expressive."
-- [ ] `precise`: "Be precise and factual."
-- [ ] `code`: "Expert software engineer."
-- [ ] `socratic`: "Guide user through questions."
-- [ ] `custom`: user's prompt only
+- [x] `default`: "You are a helpful AI assistant."
+- [x] `helpful`: "Be concise but thorough."
+- [x] `creative`: "Be imaginative and expressive."
+- [x] `precise`: "Be precise and factual."
+- [x] `code`: "Expert software engineer."
+- [x] `socratic`: "Guide user through questions."
+- [x] `custom`: user's prompt only
 - [ ] Custom presets saved in `presets.json`
 - [ ] Import/export presets
-- [ ] Test: each preset produces correct prompt
-- [ ] Test: unknown preset falls back to default
+- [x] Test: each preset produces correct prompt
+- [x] Test: unknown preset falls back to default
 
 ### 6.5 Conversation Loop
 
-- [ ] Append user message to context
-- [ ] Build full context (system + memory + history)
-- [ ] Call model with context + tools
-- [ ] No tool_calls → return text
-- [ ] Tool_calls → execute each, append results, loop
-- [ ] Max iterations: 20
-- [ ] Max parallel tool calls: 10
-- [ ] Empty response → retry once
-- [ ] Repeated tool calls → inject note to stop
-- [ ] Infinite loop detection → force text
-- [ ] Token budget exceeded → inform user
-- [ ] Test: simple chat works
-- [ ] Test: single tool call works
-- [ ] Test: multiple sequential tool calls
-- [ ] Test: parallel tool calls
-- [ ] Test: max iterations enforced
-- [ ] Test: infinite loop detection
+- [x] Append user message to context
+- [x] Build full context (system + memory + history)
+- [x] Call model with context + tools
+- [x] No tool_calls → return text
+- [x] Tool_calls → execute each, append results, loop
+- [x] Max iterations: 20
+- [x] Max parallel tool calls: 10
+- [x] Empty response → retry once
+- [x] Repeated tool calls → inject note to stop
+- [x] Infinite loop detection → force text
+- [x] Token budget exceeded → inform user
+- [x] Test: simple chat works
+- [x] Test: single tool call works
+- [x] Test: multiple sequential tool calls
+- [x] Test: parallel tool calls
+- [x] Test: max iterations enforced
+- [x] Test: infinite loop detection
 
 ### 6.6 Tool Calling
 
-- [ ] Parse tool_calls from model response
-- [ ] Lookup tool in registry
-- [ ] Tool not found → error to model
+- [x] Parse tool_calls from model response
+- [x] Lookup tool in registry
+- [x] Tool not found → error to model
 - [ ] Tool disabled → error to model
-- [ ] Validate arguments against schema
+- [x] Validate arguments against schema
 - [ ] Invalid args → validation error to model
-- [ ] Check permissions (require_approval?)
+- [x] Check permissions (require_approval?)
 - [ ] If approval → pause, show UI, wait
 - [ ] Execute with context timeout
 - [ ] Return result as tool role
@@ -1520,23 +1520,23 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 6.8 Session Persistence
 
-- [ ] Save after every user message (sync)
-- [ ] Save after every assistant message (sync)
-- [ ] Save after every tool result (sync)
-- [ ] Save on pause, complete
+- [x] Save after every user message (sync)
+- [x] Save after every assistant message (sync)
+- [x] Save after every tool result (sync)
+- [x] Save on pause, complete
 - [ ] Flush all on graceful shutdown
-- [ ] Load full session on resume
-- [ ] Load metadata only for list
-- [ ] Test: session survives restart
-- [ ] Test: messages persisted after each turn
+- [x] Load full session on resume
+- [x] Load metadata only for list
+- [x] Test: session survives restart
+- [x] Test: messages persisted after each turn
 
 ### 6.9 Agent Concurrency
 
-- [ ] Each session = goroutine
-- [ ] Per-session context with cancel
+- [x] Each session = goroutine
+- [x] Per-session context with cancel
 - [ ] Model router: semaphore pool (max 4)
 - [ ] Tool executor: semaphore pool (max 8)
-- [ ] Max concurrent sessions: 10
+- [x] Max concurrent sessions: 10
 - [ ] Over limit → "Too many active sessions"
 - [ ] UI: status dots per session
 - [ ] Test: multiple concurrent sessions
@@ -1544,15 +1544,15 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 6.10 Agent Timeouts & Rate Limiting
 
-- [ ] Per-request timeout (default 300s)
-- [ ] Idle timeout (30 min → auto-pause)
+- [x] Per-request timeout (default 300s)
+- [x] Idle timeout (30 min → auto-pause)
 - [ ] Session duration limit (24h → auto-complete)
-- [ ] Per-agent rate limit (30 msgs/min)
+- [x] Per-agent rate limit (30 msgs/min)
 - [ ] Per-provider rate limit
-- [ ] Sliding window rate limiter
+- [x] Sliding window rate limiter
 - [ ] Test: timeout kills stuck calls
 - [ ] Test: idle timeout auto-pauses
-- [ ] Test: rate limit blocks excess
+- [x] Test: rate limit blocks excess
 
 ---
 
@@ -1560,27 +1560,27 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 7.1 Tool Interface
 
-- [ ] `Tool.ID() string`
-- [ ] `Tool.Name() string`
-- [ ] `Tool.Description() string`
-- [ ] `Tool.ParameterSchema() json.RawMessage`
-- [ ] `Tool.Execute(ctx, args) (*Result, error)`
-- [ ] `Tool.ValidateArgs(args) error`
-- [ ] `type Result struct` — Success, Content, MimeType, Data, DurationMs, Truncated
+- [x] `Tool.ID() string`
+- [x] `Tool.Name() string`
+- [x] `Tool.Description() string`
+- [x] `Tool.ParameterSchema() json.RawMessage`
+- [x] `Tool.Execute(ctx, args) (*Result, error)`
+- [x] `Tool.ValidateArgs(args) error`
+- [x] `type Result struct` — Success, Content, MimeType, Data, DurationMs, Truncated
 
 ### 7.2 Tool Registry
 
-- [ ] `Register(Tool) error`
-- [ ] `RegisterMany(...Tool) error`
-- [ ] `Get(id) (Tool, error)`
-- [ ] `List(category) []Info`
-- [ ] `All() []Info`
-- [ ] `Categories() []string`
-- [ ] `Unregister(id)`
-- [ ] Categories: web, file, code, shell, db, http, image, memory, calendar, email, notes, agent, aur, system
+- [x] `Register(Tool) error`
+- [x] `RegisterMany(...Tool) error`
+- [x] `Get(id) (Tool, error)`
+- [x] `List(category) []Info`
+- [x] `All() []Info`
+- [x] `Categories() []string`
+- [x] `Unregister(id)`
+- [x] Categories: web, file, code, shell, db, http, image, memory, calendar, email, notes, agent, aur, system
 - [ ] All built-in tools registered on startup
-- [ ] Test: register and retrieve
-- [ ] Test: duplicate errors
+- [x] Test: register and retrieve
+- [x] Test: duplicate errors
 
 ### 7.3 web.search
 
@@ -4587,10 +4587,10 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 26.3 Package: internal/tool
 
-- [ ] `type Tool interface`
-- [ ] `type Registry struct`
-- [ ] `type Result struct`
-- [ ] `type Info struct`
+- [x] `type Tool interface`
+- [x] `type Registry struct`
+- [x] `type Result struct`
+- [x] `type Info struct`
 
 ### 26.4 Package: internal/memory
 
@@ -4740,17 +4740,17 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 27.3 Phase 3 — Agent Runtime
 
-- [ ] Agent manager CRUD (§6.1)
-- [ ] Session lifecycle (§6.2)
-- [ ] System prompt templating (§6.3)
-- [ ] Personality presets (§6.4)
-- [ ] Conversation loop (§6.5)
-- [ ] Tool calling (§6.6)
-- [ ] Session persistence (§6.8)
+- [x] Agent manager CRUD (§6.1)
+- [x] Session lifecycle (§6.2)
+- [x] System prompt templating (§6.3)
+- [x] Personality presets (§6.4)
+- [x] Conversation loop (§6.5)
+- [x] Tool calling (§6.6)
+- [x] Session persistence (§6.8)
 
 ### 27.4 Phase 4 — Tools
 
-- [ ] Tool interface + registry (§7.1-7.2)
+- [x] Tool interface + registry (§7.1-7.2)
 - [ ] Top 10 built-in tools (§7.3-7.12)
 - [ ] Tool sandboxing (§7.21)
 - [ ] Tool permissions (§7.22)
