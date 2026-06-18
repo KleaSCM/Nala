@@ -16,6 +16,12 @@
 	let statusOk = $state(false);
 	let errorMsg = $state("");
 
+	let providers = $state<{ id: string; name: string }[]>([]);
+	let models = $state<{ id: string; name: string }[]>([]);
+	let selectedProvider = $state("ollama");
+	let selectedModel = $state("");
+	let settingsLoaded = $state(false);
+
 	onMount(async () => {
 		try {
 			const status = await api.getStatus();
@@ -26,6 +32,39 @@
 		}
 		loadAgents();
 		loadSessions();
+		loadProviders();
+	});
+
+	async function loadProviders() {
+		try {
+			providers = await api.listProviders();
+			if (providers.length > 0) {
+				selectedProvider = providers[0].id;
+				loadModels(selectedProvider);
+			}
+		} catch (e: any) {
+			console.error("Failed to load providers", e);
+		}
+		settingsLoaded = true;
+	}
+
+	async function loadModels(providerID: string) {
+		try {
+			const ms = await api.listModels(providerID);
+			models = ms.map((m: any) => ({ id: m.id, name: m.id }));
+			if (models.length > 0 && !selectedModel) {
+				selectedModel = models[0].id;
+			}
+		} catch (e: any) {
+			models = [];
+		}
+	}
+
+	$effect(() => {
+		if (selectedProvider && settingsLoaded) {
+			selectedModel = "";
+			loadModels(selectedProvider);
+		}
 	});
 
 	async function loadAgents() {
@@ -112,6 +151,25 @@
 		currentSessionId = id;
 		messages = [];
 		currentView = "chat";
+	}
+
+	function createNewAgent() {
+		const name = prompt("Agent name:", "New Agent");
+		if (!name) return;
+		api.createAgent(name, "", "default", {}).then(a => {
+			agents = [...agents, a];
+		}).catch((e: any) => {
+			errorMsg = `Failed to create agent: ${e.message || e}`;
+		});
+	}
+
+	function deleteAgent(id: string) {
+		if (!confirm("Delete this agent?")) return;
+		api.deleteAgent(id).then(() => {
+			agents = agents.filter(a => a.id !== id);
+		}).catch((e: any) => {
+			errorMsg = `Failed to delete agent: ${e.message || e}`;
+		});
 	}
 </script>
 
@@ -215,18 +273,22 @@
 			{:else if currentView === "settings"}
 				<div class="settings-container">
 					<div class="settings-card glass">
-						<h2>Model</h2>
+						<h2>Provider</h2>
 						<div class="setting-row">
 							<label for="provider-select">Provider</label>
-							<select id="provider-select" class="glass-input">
-								<option>Ollama</option>
-								<option>OpenAI</option>
-								<option>Anthropic</option>
+							<select id="provider-select" class="glass-input nala-select" bind:value={selectedProvider}>
+								{#each providers as p}
+									<option value={p.id}>{p.name}</option>
+								{/each}
 							</select>
 						</div>
 						<div class="setting-row">
-							<label for="default-model">Default Model</label>
-							<input id="default-model" type="text" class="glass-input" value="llama3.2:3b" />
+							<label for="model-select">Model</label>
+							<select id="model-select" class="glass-input nala-select" bind:value={selectedModel}>
+								{#each models as m}
+									<option value={m.id}>{m.id}</option>
+								{/each}
+							</select>
 						</div>
 					</div>
 					<div class="settings-card glass">
@@ -237,12 +299,23 @@
 						</div>
 					</div>
 				</div>
-			{:else}
-				<div class="placeholder glass">
-					<span class="placeholder-icon">
-						{#if currentView === "agents"}🤖{:else if currentView === "memory"}🧠{:else if currentView === "notes"}📝{/if}
-					</span>
-					<p>Coming soon</p>
+			{:else if currentView === "agents"}
+				<div class="agents-container">
+					<div class="agents-header">
+						<button class="glass-button" onclick={createNewAgent}>+ New Agent</button>
+					</div>
+					{#each agents as a}
+						<div class="agent-card glass">
+							<div class="agent-info">
+								<div class="agent-name">{a.name}</div>
+								<div class="agent-slug">@{a.slug}</div>
+								{#if a.personality && a.personality !== "default"}
+									<div class="agent-tag">{a.personality}</div>
+								{/if}
+							</div>
+							<button class="glass-button agent-delete" onclick={() => deleteAgent(a.id)}>✕</button>
+						</div>
+					{/each}
 				</div>
 			{/if}
 		</section>
@@ -586,18 +659,79 @@
 		color: var(--text-secondary);
 	}
 
-	.placeholder {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 64px;
-		border-radius: var(--radius-lg);
-		color: var(--text-muted);
-		gap: 12px;
+	.nala-select {
+		-webkit-appearance: none !important;
+		appearance: none !important;
+		background-color: #0f0a1a !important;
+		color: #f1f5f9 !important;
+		border: 1px solid rgba(167, 139, 250, 0.3) !important;
+		border-radius: 8px !important;
+		padding: 10px 32px 10px 14px !important;
+		font-size: 14px !important;
+		cursor: pointer !important;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a78bfa' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+		background-repeat: no-repeat !important;
+		background-position: right 12px center !important;
 	}
 
-	.placeholder-icon {
-		font-size: 48px;
+	.nala-select option {
+		background-color: #0f0a1a !important;
+		color: #f1f5f9 !important;
+	}
+
+	.nala-select:focus {
+		border-color: #a78bfa !important;
+		box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2) !important;
+	}
+
+	.agents-container {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-width: 600px;
+	}
+
+	.agents-header {
+		margin-bottom: 8px;
+	}
+
+	.agent-card {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 16px;
+		border-radius: var(--radius-md);
+	}
+
+	.agent-info {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.agent-name {
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	.agent-slug {
+		font-size: 12px;
+		color: var(--text-muted);
+	}
+
+	.agent-tag {
+		font-size: 11px;
+		background: rgba(167, 139, 250, 0.15);
+		color: var(--accent-primary);
+		padding: 2px 8px;
+		border-radius: 99px;
+		display: inline-block;
+		width: fit-content;
+		margin-top: 2px;
+	}
+
+	.agent-delete {
+		padding: 4px 10px;
+		font-size: 12px;
 	}
 </style>

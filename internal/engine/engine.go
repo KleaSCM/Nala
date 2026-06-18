@@ -87,6 +87,9 @@ func New() (*Engine, error) {
 	if err := modelReg.Register(model.NewOllamaProvider("")); err != nil {
 		log.Warn("engine: ollama registration", "error", err)
 	}
+	if err := modelReg.Register(model.NewOpenAIProvider("", cfg.Model.OpenAIKey)); err != nil {
+		log.Warn("engine: openai registration", "error", err)
+	}
 
 	return &Engine{
 		Config:           cfg,

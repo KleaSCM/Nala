@@ -59,6 +59,7 @@ type ModelConfig struct {
 	MaxTokens       int    `toml:"max_tokens"`
 	TimeoutS        int    `toml:"timeout_s"`
 	MaxConcurrent   int    `toml:"max_concurrent"`
+	OpenAIKey       string `toml:"openai_key"`
 }
 
 type MemoryConfig struct {
@@ -429,6 +430,8 @@ func setField(cfg *Config, key, val string) {
 			if v, err := strconv.Atoi(val); err == nil {
 				cfg.Model.MaxConcurrent = v
 			}
+		case "openai_key":
+			cfg.Model.OpenAIKey = val
 		}
 	case "memory":
 		switch field {
