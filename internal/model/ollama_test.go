@@ -34,7 +34,7 @@ func TestOllamaListModels(t *testing.T) {
 		if r.URL.Path != "/api/tags" {
 			t.Errorf("expected /api/tags, got %s", r.URL.Path)
 		}
-		json.NewEncoder(w).Encode(ollamaTagsResponse{
+		json.NewEncoder(w).Encode(ollamaTagsResp{
 			Models: []ollamaModel{
 				{Name: "llama3.2:3b", Size: 2000000000},
 				{Name: "mistral:7b", Size: 4000000000},
@@ -59,9 +59,9 @@ func TestOllamaChat(t *testing.T) {
 		if r.URL.Path != "/api/chat" {
 			t.Errorf("expected /api/chat, got %s", r.URL.Path)
 		}
-		json.NewEncoder(w).Encode(ollamaChatResponse{
+		json.NewEncoder(w).Encode(ollamaChatResp{
 			Model: "llama3.2:3b",
-			Message: ollamaMessage{
+			Message: ollamaMsg{
 				Role:    "assistant",
 				Content: "Hello! How can I help you?",
 			},
@@ -93,7 +93,7 @@ func TestOllamaChat(t *testing.T) {
 
 func TestOllamaChatWithSystemPrompt(t *testing.T) {
 	p := newOllamaTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		var req ollamaChatRequest
+		var req ollamaChatReq
 		json.NewDecoder(r.Body).Decode(&req)
 
 		if len(req.Messages) != 2 {
@@ -103,9 +103,9 @@ func TestOllamaChatWithSystemPrompt(t *testing.T) {
 			t.Errorf("expected first message to be system, got %s", req.Messages[0].Role)
 		}
 
-		json.NewEncoder(w).Encode(ollamaChatResponse{
+		json.NewEncoder(w).Encode(ollamaChatResp{
 			Model: "llama3.2:3b",
-			Message: ollamaMessage{Role: "assistant", Content: "Got it"},
+			Message: ollamaMsg{Role: "assistant", Content: "Got it"},
 			Done:  true,
 		})
 	})
@@ -139,7 +139,7 @@ func TestOllamaChatModelNotFound(t *testing.T) {
 
 func TestOllamaChatStream(t *testing.T) {
 	p := newOllamaTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		var req ollamaChatRequest
+		var req ollamaChatReq
 		json.NewDecoder(r.Body).Decode(&req)
 
 		if !req.Stream {
@@ -148,19 +148,19 @@ func TestOllamaChatStream(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/x-ndjson")
 		enc := json.NewEncoder(w)
-		enc.Encode(ollamaChatResponse{
+		enc.Encode(ollamaChatResp{
 			Model:   "llama3.2:3b",
-			Message: ollamaMessage{Role: "assistant", Content: "Hel"},
+			Message: ollamaMsg{Role: "assistant", Content: "Hel"},
 			Done:    false,
 		})
-		enc.Encode(ollamaChatResponse{
+		enc.Encode(ollamaChatResp{
 			Model:   "llama3.2:3b",
-			Message: ollamaMessage{Role: "assistant", Content: "lo!"},
+			Message: ollamaMsg{Role: "assistant", Content: "lo!"},
 			Done:    false,
 		})
-		enc.Encode(ollamaChatResponse{
+		enc.Encode(ollamaChatResp{
 			Model:   "llama3.2:3b",
-			Message: ollamaMessage{Role: "assistant", Content: ""},
+			Message: ollamaMsg{Role: "assistant", Content: ""},
 			Done:    true,
 			EvalCount: 5,
 			PromptEvalCount: 3,
@@ -205,8 +205,8 @@ func TestOllamaConnectionRefused(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for connection refused")
 	}
-	if !strings.Contains(err.Error(), "connection refused") {
-		t.Errorf("expected 'connection refused' in error, got: %v", err)
+	if !strings.Contains(err.Error(), "cannot connect") {
+		t.Errorf("expected 'cannot connect' in error, got: %v", err)
 	}
 }
 

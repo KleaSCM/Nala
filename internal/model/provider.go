@@ -87,6 +87,7 @@ type ChatResponse struct {
 }
 
 type StreamDelta struct {
+	Type       string     `json:"type,omitempty"`
 	Content    string     `json:"content,omitempty"`
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
 	Done       bool       `json:"done"`
