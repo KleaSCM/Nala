@@ -26,6 +26,7 @@ import (
 	"github.com/KleaSCM/nala/internal/config"
 	"github.com/KleaSCM/nala/internal/db"
 	"github.com/KleaSCM/nala/internal/logger"
+	"github.com/KleaSCM/nala/internal/memory"
 	"github.com/KleaSCM/nala/internal/model"
 	"github.com/KleaSCM/nala/internal/tool"
 )
@@ -42,6 +43,7 @@ type Engine struct {
 	Router           *model.Router
 	TokenTracker     *model.TokenTracker
 	ToolRegistry     *tool.Registry
+	MemoryManager    *memory.Manager
 
 	cancel        context.CancelFunc
 	sigWg         sync.WaitGroup
@@ -83,6 +85,7 @@ func New() (*Engine, error) {
 	tokenTracker := model.NewTokenTracker()
 	agentMgr := agent.NewManager(database)
 	sessionMgr := agent.NewSessionManager(database)
+	memMgr := memory.New(database)
 	loop := agent.NewConversationLoop(agentMgr, sessionMgr, modelReg, router, toolReg, tokenTracker)
 
 	if err := modelReg.Register(model.NewOllamaProvider("")); err != nil {
@@ -92,10 +95,69 @@ func New() (*Engine, error) {
 		log.Warn("engine: openai registration", "error", err)
 	}
 
+	// Set up embedding provider for memory system
+	var embedder memory.Embedder
+	if cfg.Model.OpenAIKey != "" {
+		embedder = memory.NewCachedEmbedder(memory.NewOpenAIEmbedder("", cfg.Model.OpenAIKey, ""))
+		log.Info("memory: using OpenAI embeddings")
+	} else {
+		ollamaEmbedder := memory.NewOllamaEmbedder("", "nomic-embed-text")
+		embedder = memory.NewCachedEmbedder(ollamaEmbedder)
+		log.Info("memory: using Ollama embeddings (nomic-embed-text)")
+	}
+	memMgr.SetEmbedder(embedder)
+
+	// Initialize FTS
+	if err := memMgr.FTS.Initialize(context.Background()); err != nil {
+		log.Warn("memory: fts init", "error", err)
+	}
+
 	sandboxDir := cfg.Tools.SandboxDir
 	notesDir := filepath.Join(cfg.Core.DataDir, "notes")
 	os.MkdirAll(sandboxDir, 0755)
 	os.MkdirAll(notesDir, 0755)
+
+	// Wire memory tools with real functions
+	memStore := tool.MemoryStore{
+		StoreFn: func(ctx context.Context, fact, category string, importance float64) error {
+			return memMgr.StoreUserMemory(ctx, fact, category, importance)
+		},
+	}
+	memRecall := tool.MemoryRecall{
+		RecallFn: func(ctx context.Context, query string, topK int) ([]tool.MemoryResult, error) {
+			mems, err := memMgr.RecallUserMemory(ctx, query, topK)
+			if err != nil {
+				return nil, err
+			}
+			results := make([]tool.MemoryResult, len(mems))
+			for i, m := range mems {
+				results[i] = tool.MemoryResult{
+					Fact:       m.Fact,
+					Category:   m.Category,
+					Confidence: m.Confidence,
+					Source:     m.Source,
+				}
+			}
+			return results, nil
+		},
+	}
+	knowledgeSearch := tool.KnowledgeSearch{
+		EmbedFn: func(ctx context.Context, texts []string) ([][]float32, error) {
+			return embedder.Embed(ctx, texts)
+		},
+		SearchFn: func(ctx context.Context, collection string, vector []float32, topK int, minScore float64) ([]tool.VectorResult, error) {
+			results, err := memMgr.VectorDB.SearchWithMinScore(ctx, collection, vector, topK, minScore)
+			if err != nil {
+				return nil, err
+			}
+			vrs := make([]tool.VectorResult, len(results))
+			for i, r := range results {
+				vrs[i] = tool.VectorResult{ID: r.ID, Score: r.Score, Metadata: r.Metadata}
+			}
+			return vrs, nil
+		},
+	}
+
 	toolReg.RegisterMany(
 		tool.WebSearch{},
 		tool.WebFetch{},
@@ -110,9 +172,9 @@ func New() (*Engine, error) {
 		tool.HTTPRequest{},
 		tool.ImageGenerate{},
 		tool.ImageAnalyze{},
-		tool.KnowledgeSearch{},
-		tool.MemoryStore{},
-		tool.MemoryRecall{},
+		knowledgeSearch,
+		memStore,
+		memRecall,
 		tool.CalendarList{},
 		tool.CalendarCreate{},
 		tool.EmailSend{},
@@ -142,6 +204,7 @@ func New() (*Engine, error) {
 		AgentManager:     agentMgr,
 		SessionManager:   sessionMgr,
 		ConversationLoop: loop,
+		MemoryManager:    memMgr,
 	}, nil
 }
 
@@ -162,6 +225,10 @@ func (e *Engine) Start() error {
 
 	if e.SessionManager != nil {
 		go e.SessionManager.CheckExpiry(ctx)
+	}
+
+	if e.MemoryManager != nil {
+		go e.MemoryManager.StartConsolidationLoop(ctx)
 	}
 
 	e.Router.DiscoverModels(ctx)

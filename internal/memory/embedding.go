@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sort"
 	"sync"
 	"time"
 )

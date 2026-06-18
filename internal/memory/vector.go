@@ -13,7 +13,6 @@ package memory
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"sort"
 	"sync"
