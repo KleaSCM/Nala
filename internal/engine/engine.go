@@ -31,8 +31,13 @@ type Engine struct {
 	Logger *logger.Logger
 	DB     *sql.DB
 
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	cancel    context.CancelFunc
+	wg        sync.WaitGroup
+	onFatal   func(msg string) // hook for testing
+}
+
+func (e *Engine) SetOnFatal(fn func(msg string)) {
+	e.onFatal = fn
 }
 
 func New() (*Engine, error) {
@@ -131,6 +136,10 @@ func (e *Engine) Shutdown(timeout time.Duration) {
 		e.Logger.Info("engine shutdown complete")
 	case <-time.After(timeout):
 		e.Logger.Error("engine shutdown timeout, forcing exit")
-		os.Exit(1)
+		if e.onFatal != nil {
+			e.onFatal("shutdown timeout")
+		} else {
+			os.Exit(1)
+		}
 	}
 }

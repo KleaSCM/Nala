@@ -49,3 +49,18 @@ func New(dataDir string) (*sql.DB, error) {
 func ensureDir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
+
+func GetAppState(db *sql.DB, key string) (string, error) {
+	var val string
+	err := db.QueryRow("SELECT value FROM app_state WHERE key = ?", key).Scan(&val)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	return val, err
+}
+
+func SetAppState(db *sql.DB, key, value string) error {
+	_, err := db.Exec(`INSERT INTO app_state (key, value) VALUES (?, ?)
+		ON CONFLICT(key) DO UPDATE SET value = excluded.value`, key, value)
+	return err
+}

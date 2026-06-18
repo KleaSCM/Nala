@@ -222,6 +222,14 @@ func Migrations() []Migration {
 				content_rowid=rowid
 			);`,
 		},
+		{
+			ID:   11,
+			Name: "create_app_state",
+			Query: `CREATE TABLE IF NOT EXISTS app_state (
+				key   TEXT PRIMARY KEY,
+				value TEXT NOT NULL
+			);`,
+		},
 	}
 }
 

@@ -9,3 +9,11 @@ export function GetStatus() {
 export function GetVersion() {
   return window['go']['main']['App']['GetVersion']();
 }
+
+export function GetWindowState() {
+  return window['go']['main']['App']['GetWindowState']();
+}
+
+export function SetWindowState(arg1) {
+  return window['go']['main']['App']['SetWindowState'](arg1);
+}

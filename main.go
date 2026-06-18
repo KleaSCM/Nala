@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/KleaSCM/nala/internal/db"
 	"github.com/KleaSCM/nala/internal/engine"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -44,6 +45,14 @@ func (a *App) GetVersion() string {
 
 func (a *App) GetStatus() string {
 	return "ready"
+}
+
+func (a *App) SetWindowState(state string) error {
+	return db.SetAppState(a.engine.DB, "window_state", state)
+}
+
+func (a *App) GetWindowState() (string, error) {
+	return db.GetAppState(a.engine.DB, "window_state")
 }
 
 func appMenu() *menu.Menu {

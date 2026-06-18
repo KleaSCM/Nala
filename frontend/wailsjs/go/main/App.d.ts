@@ -4,3 +4,7 @@
 export function GetStatus():Promise<string>;
 
 export function GetVersion():Promise<string>;
+
+export function GetWindowState():Promise<string>;
+
+export function SetWindowState(arg1:string):Promise<void>;
