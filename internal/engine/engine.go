@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -92,6 +93,9 @@ func New() (*Engine, error) {
 	}
 
 	sandboxDir := cfg.Tools.SandboxDir
+	notesDir := filepath.Join(cfg.Core.DataDir, "notes")
+	os.MkdirAll(sandboxDir, 0755)
+	os.MkdirAll(notesDir, 0755)
 	toolReg.RegisterMany(
 		tool.WebSearch{},
 		tool.WebFetch{},
@@ -99,7 +103,32 @@ func New() (*Engine, error) {
 		tool.FileWrite{SandboxDir: sandboxDir},
 		tool.FileList{SandboxDir: sandboxDir},
 		tool.FileDelete{SandboxDir: sandboxDir},
+		tool.FileSearch{SandboxDir: sandboxDir},
 		tool.ShellRun{},
+		tool.CodeExecute{},
+		tool.DBQuery{DB: database},
+		tool.HTTPRequest{},
+		tool.ImageGenerate{},
+		tool.ImageAnalyze{},
+		tool.KnowledgeSearch{},
+		tool.MemoryStore{},
+		tool.MemoryRecall{},
+		tool.CalendarList{},
+		tool.CalendarCreate{},
+		tool.EmailSend{},
+		tool.EmailInbox{},
+		tool.NotesCreate{NotesDir: notesDir},
+		tool.NotesList{NotesDir: notesDir},
+		tool.AURSearch{},
+		tool.AURInfo{},
+		tool.AURInstall{},
+		tool.AURRemove{},
+		tool.AURUpdate{},
+		tool.AURList{},
+		tool.SystemMonitor{},
+		tool.SystemProcesses{},
+		tool.SystemLogs{LogDir: cfg.Core.LogFile},
+		tool.SystemNotify{},
 	)
 
 	return &Engine{
