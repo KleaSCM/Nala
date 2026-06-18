@@ -91,6 +91,17 @@ func New() (*Engine, error) {
 		log.Warn("engine: openai registration", "error", err)
 	}
 
+	sandboxDir := cfg.Tools.SandboxDir
+	toolReg.RegisterMany(
+		tool.WebSearch{},
+		tool.WebFetch{},
+		tool.FileRead{SandboxDir: sandboxDir},
+		tool.FileWrite{SandboxDir: sandboxDir},
+		tool.FileList{SandboxDir: sandboxDir},
+		tool.FileDelete{SandboxDir: sandboxDir},
+		tool.ShellRun{},
+	)
+
 	return &Engine{
 		Config:           cfg,
 		Logger:           log,

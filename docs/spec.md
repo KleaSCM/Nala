@@ -1584,59 +1584,59 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 7.3 web.search
 
-- [ ] ID: `web.search`
-- [ ] Backends: DuckDuckGo (default), SearXNG, Bing, Google CSE, Tavily
-- [ ] Args: query (required), max_results (1-20), region, safe_search
-- [ ] Returns: [{title, url, snippet}]
-- [ ] Markdown formatted
-- [ ] Timeout: 10s
+- [x] ID: `web.search`
+- [x] Backends: DuckDuckGo (default), SearXNG, Bing, Google CSE, Tavily
+- [x] Args: query (required), max_results (1-20), region, safe_search
+- [x] Returns: [{title, url, snippet}]
+- [x] Markdown formatted
+- [x] Timeout: 10s
 - [ ] Cache: TTL 5 min, LRU 100
 - [ ] Error: rate limited → cached
-- [ ] Error: no results → "No results found"
-- [ ] Error: network → "Web search unavailable"
+- [x] Error: no results → "No results found"
+- [x] Error: network → "Web search unavailable"
 - [ ] Test: DuckDuckGo returns results
 - [ ] Test: max_results respected
 
 ### 7.4 web.fetch
 
-- [ ] ID: `web.fetch`
+- [x] ID: `web.fetch`
 - [ ] Args: url (required), max_chars (default 10000), extract_mode (markdown|text|html)
 - [ ] HTML→MD via go-readability
 - [ ] Respects robots.txt
 - [ ] User-Agent: `Nala/1.0`
 - [ ] Cache: TTL 5 min, LRU 100
 - [ ] Rate limit: 10/min per domain
-- [ ] Timeout: 15s
+- [x] Timeout: 15s
 - [ ] Test: URL fetched as markdown
 - [ ] Test: max_chars truncation
 
 ### 7.5 file.read
 
-- [ ] ID: `file.read`
+- [x] ID: `file.read`
 - [ ] Args: path (required, relative to sandbox)
 - [ ] Max size: 10MB
-- [ ] Path traversal blocked
+- [x] Path traversal blocked
 - [ ] Symlinks must resolve within sandbox
 - [ ] Error: not found
-- [ ] Error: outside sandbox
+- [x] Error: outside sandbox
 - [ ] Error: binary file
 - [ ] Test: read returns content
 - [ ] Test: traversal blocked
 
 ### 7.6 file.write
 
-- [ ] ID: `file.write`
+- [x] ID: `file.write`
 - [ ] Args: path, content, mode (overwrite|append|create_new)
 - [ ] Parent dirs auto-created
 - [ ] Max size: 10MB
 - [ ] Error: file exists (create_new mode)
-- [ ] Error: outside sandbox
+- [x] Error: outside sandbox
 - [ ] Test: write creates file
 - [ ] Test: append adds to file
 
 ### 7.7 file.list
 
-- [ ] ID: `file.list`
+- [x] ID: `file.list`
 - [ ] Args: path, pattern (glob), recursive (bool)
 - [ ] Returns: [{name, path, size, modified_at, is_dir}]
 - [ ] Max entries: 10000
@@ -1645,7 +1645,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 7.8 file.delete
 
-- [ ] ID: `file.delete`
+- [x] ID: `file.delete`
 - [ ] Args: path, permanent (bool, default false)
 - [ ] permanent=false → moves to trash
 - [ ] permanent=true → immediate (requires approval)
@@ -1672,14 +1672,14 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 7.10 shell.run
 
-- [ ] ID: `shell.run`
+- [x] ID: `shell.run`
 - [ ] Args: command (whitelisted), args (string[])
-- [ ] Whitelist: ls, cat, head, tail, wc, find, grep, ps, df, du, uname, whoami, date, echo, pwd
+- [x] Whitelist: ls, cat, head, tail, wc, find, grep, ps, df, du, uname, whoami, date, echo, pwd
 - [ ] Conditional: ping, curl, wget, dig (require network)
-- [ ] No chaining (;, &&, ||, |)
-- [ ] No subshells ($(), backticks)
+- [x] No chaining (;, &&, ||, |)
+- [x] No subshells ($(), backticks)
 - [ ] Always requires approval
-- [ ] Timeout: 15s
+- [x] Timeout: 15s
 - [ ] Test: whitelisted command runs
 - [ ] Test: non-whitelisted rejected
 - [ ] Test: chaining blocked
@@ -1732,7 +1732,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 7.15 knowledge.search
 
-- [ ] ID: `knowledge.search`
+- [x] ID: `knowledge.search`
 - [ ] Args: query, knowledge_base_id, top_k (5), min_score (0.7)
 - [ ] Embed query → vector search → format results
 - [ ] Test: search returns relevant results
@@ -1773,7 +1773,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 ### 7.21 Tool Sandboxing
 
 - [ ] Sandbox root: `{data_dir}/sandbox/`
-- [ ] Path traversal blocked
+- [x] Path traversal blocked
 - [ ] Linux: `unshare(CLONE_NEWNET)` network isolation
 - [ ] RLIMIT_AS (256MB), RLIMIT_CPU, RLIMIT_FSIZE (10MB)
 - [ ] seccomp: block dangerous syscalls
@@ -1796,11 +1796,11 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 ### 7.23 aur.search
 
 - [ ] ID: `aur.search`
-- [ ] Args: query (required), limit (1-50, default 10), by (name|desc|maintainer)
+- [x] Args: query (required), limit (1-50, default 10), by (name|desc|maintainer)
 - [ ] Searches Arch User Repository for packages
 - [ ] Returns: [{name, version, description, votes, popularity, maintainer, last_modified}]
 - [ ] Filters: out-of-date, orphaned
-- [ ] Timeout: 10s
+- [x] Timeout: 10s
 - [ ] Error: AUR unreachable → "AUR search unavailable"
 - [ ] Error: no results → "No packages found"
 - [ ] Test: search returns results
@@ -1811,7 +1811,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 - [ ] ID: `aur.info`
 - [ ] Args: package (required)
 - [ ] Returns: full package info (name, version, description, url, license, depends, makedepends, conflicts, provides, votes, popularity, maintainer, last_modified, out_of_date, keywords, package_base_id)
-- [ ] Timeout: 10s
+- [x] Timeout: 10s
 - [ ] Error: package not found → "Package not found"
 - [ ] Test: info returns valid data
 
@@ -1906,7 +1906,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 - [ ] ID: `file.search`
 - [ ] Args: pattern (glob or regex, required), root (optional, default sandbox), recursive (bool, default true), max_results (1-1000, default 100), type (file|dir|all, default all)
 - [ ] Searches files by pattern
-- [ ] Path traversal blocked (relative to root)
+- [x] Path traversal blocked (relative to root)
 - [ ] Respects sandbox boundaries
 - [ ] Symlinks: follow or skip (configurable, default skip)
 - [ ] Binary files: listed but content not searched
@@ -4237,7 +4237,7 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 ### 24.3 Command Safety
 
 - [ ] Shell commands restricted to whitelist (shell.run tool)
-- [ ] Whitelist: ls, cat, head, tail, wc, find, grep, ps, df, du, uname, whoami, date, echo, pwd
+- [x] Whitelist: ls, cat, head, tail, wc, find, grep, ps, df, du, uname, whoami, date, echo, pwd
 - [ ] Dangerous patterns detected and blocked:
   - [ ] `rm -rf /` family
   - [ ] `dd` with block devices
