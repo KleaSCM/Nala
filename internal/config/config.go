@@ -13,12 +13,15 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fsnotify/fsnotify"
 )
 
 type Config struct {
@@ -87,8 +90,6 @@ type UIConfig struct {
 	FontSize int    `toml:"font_size"`
 	Language string `toml:"language"`
 }
-
-var current Config
 
 func DefaultConfig() Config {
 	homeDir, _ := os.UserHomeDir()
@@ -187,12 +188,159 @@ func Load() (*Config, error) {
 	if err := validate(&cfg); err != nil {
 		return nil, err
 	}
-	current = cfg
+	setCurrent(cfg)
 	return &cfg, nil
 }
 
 func Get() Config {
+	currentMu.RLock()
+	defer currentMu.RUnlock()
 	return current
+}
+
+type ReloadCallback func(old, new Config)
+type reloadEntry struct {
+	fn       ReloadCallback
+	immediate bool
+}
+
+var (
+	current   Config
+	currentMu sync.RWMutex
+
+	reloadMu     sync.Mutex
+	reloadCalls  []reloadEntry
+	watcher      *fsnotify.Watcher
+	watcherDone  chan struct{}
+	hotReloadErr error
+)
+
+func OnReload(fn ReloadCallback, immediate bool) {
+	reloadMu.Lock()
+	defer reloadMu.Unlock()
+	reloadCalls = append(reloadCalls, reloadEntry{fn: fn, immediate: immediate})
+}
+
+func notifyReload(old, new Config) {
+	reloadMu.Lock()
+	calls := make([]reloadEntry, len(reloadCalls))
+	copy(calls, reloadCalls)
+	reloadMu.Unlock()
+
+	for _, entry := range calls {
+		if entry.immediate {
+			entry.fn(old, new)
+		}
+	}
+}
+
+func StartWatcher() error {
+	w, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("config: cannot create watcher: %w", err)
+	}
+
+	configPath, err := configFilePath()
+	if err != nil {
+		w.Close()
+		return err
+	}
+
+	if err := w.Add(filepath.Dir(configPath)); err != nil {
+		w.Close()
+		return fmt.Errorf("config: cannot watch config directory: %w", err)
+	}
+
+	watcher = w
+	watcherDone = make(chan struct{})
+
+	go func() {
+		defer close(watcherDone)
+		for {
+			select {
+			case event, ok := <-w.Events:
+				if !ok {
+					return
+				}
+				if event.Name == configPath && (event.Has(fsnotify.Write) || event.Has(fsnotify.Create)) {
+					old := Get()
+					newCfg := DefaultConfig()
+					if _, decodeErr := toml.DecodeFile(configPath, &newCfg); decodeErr != nil {
+						log.Printf("config: hot-reload decode error: %v", decodeErr)
+						continue
+					}
+					applyEnvOverrides(&newCfg)
+					if err := validate(&newCfg); err != nil {
+						log.Printf("config: hot-reload validation error: %v", err)
+						continue
+					}
+					setCurrent(newCfg)
+					notifyReload(old, newCfg)
+					log.Printf("config: hot-reloaded from %s", configPath)
+				}
+			case err, ok := <-w.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("config: watcher error: %v", err)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func StopWatcher() {
+	if watcher != nil {
+		watcher.Close()
+		<-watcherDone
+		watcher = nil
+	}
+}
+
+func setCurrent(cfg Config) {
+	currentMu.Lock()
+	defer currentMu.Unlock()
+	current = cfg
+}
+
+func SafeFields() map[string]bool {
+	return map[string]bool{
+		"core.log_level":              true,
+		"core.log_file":               true,
+		"core.log_max_size":           true,
+		"core.log_max_age":            true,
+		"ui.theme":                    true,
+		"ui.font_size":                true,
+		"ui.language":                 true,
+		"model.default_provider":      true,
+		"model.default_model":         true,
+		"model.max_tokens":            true,
+		"model.timeout_s":             true,
+		"model.max_concurrent":        true,
+		"memory.vector_backend":       true,
+		"memory.default_chunk_size":   true,
+		"memory.default_chunk_overlap": true,
+		"memory.auto_extract_facts":   true,
+		"tools.code_exec_timeout_s":   true,
+		"tools.max_concurrent_tools":  true,
+		"tools.tools_network_access":  true,
+		"privacy.sanitize_uploads":    true,
+		"privacy.disable_telemetry":   true,
+	}
+}
+
+func UnsafeFields() map[string]bool {
+	return map[string]bool{
+		"core.data_dir":           true,
+		"server.port":             true,
+		"server.host":             true,
+		"server.enabled":          true,
+		"server.require_auth":     true,
+		"tools.sandbox_dir":       true,
+		"privacy.airgap_mode":     true,
+		"privacy.audit_retention_days": true,
+	}
 }
 
 func applyEnvOverrides(cfg *Config) {

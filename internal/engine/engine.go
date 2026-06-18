@@ -55,6 +55,10 @@ func New() (*Engine, error) {
 		return nil, fmt.Errorf("engine: db migrate failed: %w", err)
 	}
 
+	if err := config.StartWatcher(); err != nil {
+		log.Warn("config: hot-reload not available", "error", err)
+	}
+
 	return &Engine{
 		Config: cfg,
 		Logger: log,
@@ -106,6 +110,8 @@ func (e *Engine) Shutdown(timeout time.Duration) {
 		}
 
 		e.wg.Wait()
+
+		config.StopWatcher()
 
 		if e.DB != nil {
 			if err := e.DB.Close(); err != nil {

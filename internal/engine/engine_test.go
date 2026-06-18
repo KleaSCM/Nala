@@ -99,3 +99,23 @@ func TestSignalTriggersShutdown(t *testing.T) {
 	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	time.Sleep(100 * time.Millisecond)
 }
+
+func TestForceExitAfterTimeout(t *testing.T) {
+	origHome := os.Getenv("HOME")
+	tmpDir := t.TempDir()
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", origHome)
+
+	e, err := New()
+	if err != nil {
+		t.Fatalf("New() error: %v", err)
+	}
+
+	if err := e.Start(); err != nil {
+		t.Fatalf("Start() error: %v", err)
+	}
+
+	// Shutdown with very short timeout should not panic
+	e.Shutdown(1 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
+}

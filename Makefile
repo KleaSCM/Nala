@@ -7,11 +7,14 @@ GOLANGCI_LINT ?= $(GOPATH)/bin/golangci-lint
 MODULE := github.com/KleaSCM/nala
 BUILD_DIR := build
 
+TAGS ?= webkit2_41
+GDK_BACKEND ?= x11
+
 dev:
-	wails dev
+	GDK_BACKEND=$(GDK_BACKEND) wails dev -tags $(TAGS)
 
 build:
-	wails build -o $(BUILD_DIR)/nala
+	GDK_BACKEND=$(GDK_BACKEND) wails build -o $(BUILD_DIR)/nala -tags $(TAGS)
 
 build-all:
 	$(GO) build -o $(BUILD_DIR)/nalad ./cmd/nalad/
