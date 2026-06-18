@@ -115,6 +115,7 @@ func TestForceExitAfterTimeout(t *testing.T) {
 	e.SetOnFatal(func(msg string) {
 		fatalCalled = true
 	})
+	e.shutdownDelay = 1 * time.Second
 
 	if err := e.Start(); err != nil {
 		t.Fatalf("Start() error: %v", err)

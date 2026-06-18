@@ -111,7 +111,7 @@ func (r *Registry) ChatWithFallback(ctx context.Context, chain *FallbackChain, r
 			}
 		}
 
-		if i < len(chain.Steps)-1 && chain.MaxRetries > 0 {
+		if chain.MaxRetries > 0 {
 			for retry := 0; retry < chain.MaxRetries; retry++ {
 				resp, retryErr := provider.Chat(ctx, req)
 				if retryErr == nil {
@@ -124,6 +124,9 @@ func (r *Registry) ChatWithFallback(ctx context.Context, chain *FallbackChain, r
 					}
 				}
 				lastErr = retryErr
+				if !isRetryable(retryErr) {
+					break
+				}
 			}
 		}
 	}

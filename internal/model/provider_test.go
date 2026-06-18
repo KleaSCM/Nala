@@ -15,6 +15,7 @@ package model
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -132,3 +133,60 @@ func TestMockChatStream(t *testing.T) {
 		t.Error("expected done")
 	}
 }
+
+// configurableMockProvider supports test-driven provider ID/model/error control.
+type configurableMockProvider struct {
+	id        string
+	name      string
+	modelID   string
+	chatErr   error
+	streamErr error
+	chatFn    func(ctx context.Context, req ChatRequest) (*ChatResponse, error)
+	models    []ModelInfo
+}
+
+func NewMockProvider(id, modelID string, healthy bool) *configurableMockProvider {
+	p := &configurableMockProvider{
+		id:      id,
+		name:    id,
+		modelID: modelID,
+		models:  []ModelInfo{{ID: modelID, Name: modelID, Provider: id}},
+	}
+	if !healthy {
+		p.chatErr = ErrProviderUnhealthy
+		p.streamErr = ErrProviderUnhealthy
+	}
+	return p
+}
+
+func (m *configurableMockProvider) ID() string { return m.id }
+func (m *configurableMockProvider) Name() string { return m.name }
+func (m *configurableMockProvider) ListModels(ctx context.Context) ([]ModelInfo, error) {
+	return m.models, nil
+}
+func NewMockProviderErr(msg string) error {
+	return fmt.Errorf("mock: %s", msg)
+}
+
+func (m *configurableMockProvider) Chat(ctx context.Context, req ChatRequest) (*ChatResponse, error) {
+	if m.chatFn != nil {
+		return m.chatFn(ctx, req)
+	}
+	if m.chatErr != nil {
+		return nil, m.chatErr
+	}
+	return &ChatResponse{Model: m.modelID, Provider: m.id}, nil
+}
+func (m *configurableMockProvider) ChatStream(ctx context.Context, req ChatRequest) (<-chan StreamDelta, error) {
+	if m.streamErr != nil {
+		return nil, m.streamErr
+	}
+	ch := make(chan StreamDelta, 1)
+	ch <- StreamDelta{Done: true, Type: "done"}
+	close(ch)
+	return ch, nil
+}
+func (m *configurableMockProvider) CountTokens(ctx context.Context, msgs []Message) (int, error) {
+	return 0, nil
+}
+func (m *configurableMockProvider) ValidateConfig() error { return nil }

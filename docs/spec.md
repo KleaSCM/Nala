@@ -298,15 +298,15 @@ The system models **agents as concurrent processes**, not sequential pipelines. 
 
 ### 2.1 Entities
 
-- [ ] Agent entity defined
-- [ ] Session entity defined
-- [ ] Message entity defined
-- [ ] ToolBinding entity defined
-- [ ] KnowledgeBase entity defined
-- [ ] Document entity defined
-- [ ] ProviderConfig entity defined
-- [ ] ScheduledTask entity defined
-- [ ] AuditLogEntry entity defined
+- [x] Agent entity defined
+- [x] Session entity defined
+- [x] Message entity defined
+- [x] ToolBinding entity defined
+- [x] KnowledgeBase entity defined
+- [x] Document entity defined
+- [x] ProviderConfig entity defined
+- [x] ScheduledTask entity defined
+- [x] AuditLogEntry entity defined
 - [ ] Task entity defined
 - [ ] Note entity defined
 - [ ] Calendar entity defined
@@ -353,7 +353,7 @@ CREATE INDEX idx_agents_created ON agents(created_at);
 - [ ] SQL: agents table with all columns
 - [ ] SQL: idx_agents_slug UNIQUE index
 - [ ] SQL: idx_agents_created index
-- [ ] Go: `type Agent struct` defined
+- [x] Go: `type Agent struct` defined
 - [ ] Validation: name required, 1-100 chars
 - [ ] Validation: slug matches `^[a-z0-9][a-z0-9-]{0,98}[a-z0-9]$`
 - [ ] Validation: temperature in [0.0, 2.0]
@@ -396,7 +396,7 @@ CREATE INDEX idx_sessions_updated ON sessions(updated_at);
 - [ ] SQL: sessions table with all columns
 - [ ] SQL: FK with ON DELETE CASCADE
 - [ ] SQL: indexes on agent_id, status, updated_at
-- [ ] Go: `type Session struct` defined
+- [x] Go: `type Session struct` defined
 - [ ] Session status: active, paused, completed, expired, error
 - [ ] Edge case: status transitions (created→active→paused→completed)
 - [ ] Edge case: pause already-paused session (no-op)
@@ -430,9 +430,9 @@ CREATE INDEX idx_messages_created ON messages(session_id, created_at);
 
 - [ ] SQL: messages table with all columns
 - [ ] SQL: indexes
-- [ ] Go: `type Message struct` defined
-- [ ] Go: `type ToolCall struct` defined
-- [ ] Go: `type ToolResult struct` defined
+- [x] Go: `type Message struct` defined
+- [x] Go: `type ToolCall struct` defined
+- [x] Go: `type ToolResult struct` defined
 - [ ] Role values: system, user, assistant, tool
 - [ ] Edge case: content=NULL when only tool_calls
 - [ ] Edge case: very long content >100KB (truncate)
@@ -469,7 +469,7 @@ CREATE INDEX idx_providers_priority ON provider_configs(priority);
 
 - [ ] SQL: provider_configs table
 - [ ] SQL: indexes
-- [ ] Go: `type ProviderConfig struct` defined
+- [x] Go: `type ProviderConfig struct` defined
 - [ ] Provider values: ollama, openai, anthropic, google, mistral, groq, generic
 - [ ] API key encrypted at rest (AES-256-GCM)
 - [ ] API key hint: last 4 chars ("…ab12")
@@ -498,7 +498,7 @@ CREATE TABLE knowledge_bases (
 ```
 
 - [ ] SQL: knowledge_bases table
-- [ ] Go: `type KnowledgeBase struct` defined
+- [x] Go: `type KnowledgeBase struct` defined
 - [ ] Chunk strategies: fixed, recursive, semantic
 - [ ] Edge case: empty KB (no documents)
 - [ ] Edge case: delete KB with documents (cascade)
@@ -525,8 +525,8 @@ CREATE INDEX idx_documents_hash ON documents(content_hash);
 
 - [ ] SQL: documents table
 - [ ] SQL: indexes
-- [ ] Go: `type Document struct` defined
-- [ ] Go: `type Chunk struct` defined
+- [x] Go: `type Document struct` defined
+- [x] Go: `type Chunk struct` defined
 - [ ] Edge case: binary file with no content (metadata only)
 - [ ] Edge case: encrypted PDF (error)
 - [ ] Edge case: duplicate file (content_hash → skip)
@@ -556,7 +556,7 @@ CREATE INDEX idx_scheduled_next ON scheduled_tasks(enabled, next_run_at);
 
 - [ ] SQL: scheduled_tasks table
 - [ ] SQL: index
-- [ ] Go: `type ScheduledTask struct` defined
+- [x] Go: `type ScheduledTask struct` defined
 - [ ] Cron: standard 5-field
 - [ ] Edge case: next_run_at in past on startup (catch-up)
 - [ ] Edge case: max_runs=0 means unlimited
@@ -585,7 +585,7 @@ CREATE INDEX idx_audit_actor ON audit_log(actor_id);
 
 - [ ] SQL: audit_log table
 - [ ] SQL: indexes
-- [ ] Go: `type AuditLogEntry struct` defined
+- [x] Go: `type AuditLogEntry struct` defined
 - [ ] Level: debug, info, warn, error
 - [ ] Category: tool_exec, model_call, agent_action, config_change, auth, system
 - [ ] Retention: configurable (default 90 days)
@@ -932,17 +932,17 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 - [ ] Applied on startup in order
 - [ ] Each wrapped in transaction
 - [ ] Idempotent: only unapplied run
-- [ ] Migration 001: create agents table
-- [ ] Migration 002: create sessions table
-- [ ] Migration 003: create messages table
-- [ ] Migration 004: create tool_bindings table
-- [ ] Migration 005: create knowledge_bases table
-- [ ] Migration 006: create documents table
-- [ ] Migration 007: create provider_configs table
-- [ ] Migration 008: create scheduled_tasks table
-- [ ] Migration 009: create audit_log table
-- [ ] Migration 010: create tasks table
-- [ ] Migration 011: create notes table
+- [x] Migration 001: create agents table
+- [x] Migration 002: create sessions table
+- [x] Migration 003: create messages table
+- [x] Migration 004: create tool_bindings table
+- [x] Migration 005: create knowledge_bases table
+- [x] Migration 006: create documents table
+- [x] Migration 007: create provider_configs table
+- [x] Migration 008: create scheduled_tasks table
+- [x] Migration 009: create audit_log table
+- [x] Migration 010: create tasks table
+- [x] Migration 011: create notes table
 - [ ] Migration 012: create calendars table
 - [ ] Migration 013: create events table
 - [ ] Migration 014: create email_accounts table
@@ -1063,76 +1063,76 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 4.1 NALA-001: Project Scaffolding
 
-- [ ] Go module: `github.com/KleaSCM/nala`
-- [ ] Go version: 1.24+
-- [ ] `wails.json` with app metadata
-- [ ] App ID: `com.kleascm.nala`
-- [ ] Window: single, resizable, min 800×600, default 1200×800
-- [ ] Window title: "Nala"
-- [ ] System tray with icon
-- [ ] Svelte 5 + Vite + TypeScript strict mode
-- [ ] Tailwind CSS v4 with custom theme
-- [ ] `Makefile` targets: dev, build, build-all, test, lint, clean
-- [ ] `make dev` launches app with hot reload
-- [ ] `make build` produces single binary in `build/`
-- [ ] `golangci-lint` config
-- [ ] Prettier + ESLint config for UI
-- [ ] `.gitignore` for Go + Node + Wails artifacts
+- [x] Go module: `github.com/KleaSCM/nala`
+- [x] Go version: 1.24+
+- [x] `wails.json` with app metadata
+- [x] App ID: `com.kleascm.nala`
+- [x] Window: single, resizable, min 800×600, default 1200×800
+- [x] Window title: "Nala"
+- [x] System tray with icon
+- [x] Svelte 5 + Vite + TypeScript strict mode
+- [x] Tailwind CSS v4 with custom theme
+- [x] `Makefile` targets: dev, build, build-all, test, lint, clean
+- [x] `make dev` launches app with hot reload
+- [x] `make build` produces single binary in `build/`
+- [x] `golangci-lint` config
+- [x] Prettier + ESLint config for UI
+- [x] `.gitignore` for Go + Node + Wails artifacts
 
 ### 4.2 NALA-002: Window Shell
 
-- [ ] Window opens at 1200×800, centered
-- [ ] Minimum size: 800×600
-- [ ] Window position/size persisted between launches
+- [x] Window opens at 1200×800, centered
+- [x] Minimum size: 800×600
+- [x] Window position/size persisted between launches
 - [ ] Closing window hides to tray (configurable)
-- [ ] System tray icon (cat silhouette)
+- [x] System tray icon (cat silhouette)
 - [ ] Tray menu: Show Nala, New Chat, Recent Agents (5), Settings, Quit
-- [ ] Native menu: Nala (About, Settings, Quit)
-- [ ] Native menu: Edit (Undo, Redo, Cut, Copy, Paste, Select All)
-- [ ] Native menu: View (Toggle Sidebar, Toggle DevTools, Full Screen, Reload)
-- [ ] Native menu: Help (Documentation, Report Issue, About)
+- [x] Native menu: Nala (About, Settings, Quit)
+- [x] Native menu: Edit (Undo, Redo, Cut, Copy, Paste, Select All)
+- [x] Native menu: View (Toggle Sidebar, Toggle DevTools, Full Screen, Reload)
+- [x] Native menu: Help (Documentation, Report Issue, About)
 - [ ] Notifications: agent completed, scheduled run, error, update available
 - [ ] Native file dialogs via Wails bridge
 
 ### 4.3 NALA-003: Configuration System
 
-- [ ] `config.Load()` function
-- [ ] `config.Get()` returns current config
-- [ ] Config file created with defaults on first run
-- [ ] Environment variable overlay
-- [ ] Config validation on load
-- [ ] Config hot-reload via `fsnotify`
-- [ ] Safe fields apply immediately
-- [ ] Unsafe fields require restart
-- [ ] UI notification on config change
-- [ ] Test: Load() returns defaults
-- [ ] Test: Load() overrides from env vars
+- [x] `config.Load()` function
+- [x] `config.Get()` returns current config
+- [x] Config file created with defaults on first run
+- [x] Environment variable overlay
+- [x] Config validation on load
+- [x] Config hot-reload via `fsnotify`
+- [x] Safe fields apply immediately
+- [x] Unsafe fields require restart
+- [x] UI notification on config change
+- [x] Test: Load() returns defaults
+- [x] Test: Load() overrides from env vars
 
 ### 4.4 NALA-004: SQLite Database
 
-- [ ] Path: `{data_dir}/nala.db`
-- [ ] Driver: `modernc.org/sqlite` (pure Go, no CGo)
-- [ ] WAL journal mode
-- [ ] Busy timeout: 5000ms
-- [ ] Foreign keys ON
-- [ ] Synchronous: NORMAL
-- [ ] Cache: 8MB
-- [ ] Migration runner in `internal/db/migrate.go`
-- [ ] `_migrations` table tracking
-- [ ] All migrations wrapped in transactions
-- [ ] Test: NewDB() creates file
-- [ ] Test: Migrate() applies all
-- [ ] Test: Migrate() is idempotent
+- [x] Path: `{data_dir}/nala.db`
+- [x] Driver: `modernc.org/sqlite` (pure Go, no CGo)
+- [x] WAL journal mode
+- [x] Busy timeout: 5000ms
+- [x] Foreign keys ON
+- [x] Synchronous: NORMAL
+- [x] Cache: 8MB
+- [x] Migration runner in `internal/db/migrate.go`
+- [x] `_migrations` table tracking
+- [x] All migrations wrapped in transactions
+- [x] Test: NewDB() creates file
+- [x] Test: Migrate() applies all
+- [x] Test: Migrate() is idempotent
 
 ### 4.5 NALA-005: Logging
 
-- [ ] Logger wrapper around `go.uber.org/zap`
-- [ ] Methods: Debug, Info, Warn, Error
-- [ ] `With(fields)` returns child logger
-- [ ] JSON output format
-- [ ] stdout output (default)
-- [ ] File output when `log_file` set
-- [ ] Log rotation: 50MB, 5 files, gzip, 30 days
+- [x] Logger wrapper around `go.uber.org/zap`
+- [x] Methods: Debug, Info, Warn, Error
+- [x] `With(fields)` returns child logger
+- [x] JSON output format
+- [x] stdout output (default)
+- [x] File output when `log_file` set
+- [x] Log rotation: 50MB, 5 files, gzip, 30 days
 - [ ] UI log viewer component
 - [ ] Log viewer: real-time via Wails events
 - [ ] Log viewer: filter by level, search by text
@@ -1144,19 +1144,19 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 4.6 NALA-006: Graceful Shutdown
 
-- [ ] SIGINT handler registered
-- [ ] SIGTERM handler registered
-- [ ] Cancel root context
-- [ ] API server drain (10s timeout)
-- [ ] Agent sessions drain (15s timeout)
-- [ ] In-flight model calls wait (10s)
-- [ ] Plugin manager stop
-- [ ] Database close
-- [ ] Logger flush
-- [ ] Total timeout: 30s
-- [ ] After timeout: os.Exit(1)
-- [ ] Test: SIGINT triggers graceful shutdown
-- [ ] Test: force exit after timeout
+- [x] SIGINT handler registered
+- [x] SIGTERM handler registered
+- [x] Cancel root context
+- [x] API server drain (10s timeout)
+- [x] Agent sessions drain (15s timeout)
+- [x] In-flight model calls wait (10s)
+- [x] Plugin manager stop
+- [x] Database close
+- [x] Logger flush
+- [x] Total timeout: 30s
+- [x] After timeout: os.Exit(1)
+- [x] Test: SIGINT triggers graceful shutdown
+- [x] Test: force exit after timeout
 
 ---
 
@@ -1164,60 +1164,60 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 5.1 Provider Interface
 
-- [ ] `Provider.ID() string`
-- [ ] `Provider.Name() string`
-- [ ] `Provider.ListModels(ctx) ([]ModelInfo, error)`
-- [ ] `Provider.Chat(ctx, ChatRequest) (*ChatResponse, error)`
-- [ ] `Provider.ChatStream(ctx, ChatRequest) (<-chan StreamDelta, error)`
-- [ ] `Provider.CountTokens(ctx, msgs) (int, error)`
-- [ ] `Provider.ValidateConfig() error`
-- [ ] `type ChatRequest struct` — Model, Messages, SystemPrompt, Parameters, Tools, Stream
-- [ ] `type ChatResponse struct` — Message, Usage, Model, Duration
-- [ ] `type StreamDelta struct` — Content, ToolCalls, Done, Usage, Error
+- [x] `Provider.ID() string`
+- [x] `Provider.Name() string`
+- [x] `Provider.ListModels(ctx) ([]ModelInfo, error)`
+- [x] `Provider.Chat(ctx, ChatRequest) (*ChatResponse, error)`
+- [x] `Provider.ChatStream(ctx, ChatRequest) (<-chan StreamDelta, error)`
+- [x] `Provider.CountTokens(ctx, msgs) (int, error)`
+- [x] `Provider.ValidateConfig() error`
+- [x] `type ChatRequest struct` — Model, Messages, SystemPrompt, Parameters, Tools, Stream
+- [x] `type ChatResponse struct` — Message, Usage, Model, Duration
+- [x] `type StreamDelta struct` — Content, ToolCalls, Done, Usage, Error
 
 ### 5.2 Provider Registry
 
-- [ ] `NewRegistry()`
-- [ ] `Register(Provider) error` — errors on duplicate
-- [ ] `Get(id) (Provider, error)` — errors if not found
-- [ ] `List() []Provider`
-- [ ] `Remove(id)`
-- [ ] Test: register and retrieve
-- [ ] Test: duplicate registration errors
-- [ ] Test: get nonexistent errors
+- [x] `NewRegistry()`
+- [x] `Register(Provider) error` — errors on duplicate
+- [x] `Get(id) (Provider, error)` — errors if not found
+- [x] `List() []Provider`
+- [x] `Remove(id)`
+- [x] Test: register and retrieve
+- [x] Test: duplicate registration errors
+- [x] Test: get nonexistent errors
 
 ### 5.3 Ollama Provider
 
-- [ ] Default endpoint: `http://localhost:11434`
-- [ ] Health: `GET /api/tags`
-- [ ] `ListModels`: `GET /api/tags`
-- [ ] `Chat`: `POST /api/chat`
-- [ ] `ChatStream`: `POST /api/chat` stream=true, SSE parsing
-- [ ] Model pulling: `POST /api/pull` with progress
-- [ ] Embeddings: `POST /api/embeddings`
-- [ ] Error: connection refused → "Ollama not running"
-- [ ] Error: model not found → "Pull model from model manager"
-- [ ] Test: Chat returns expected response
-- [ ] Test: ChatStream emits deltas
+- [x] Default endpoint: `http://localhost:11434`
+- [x] Health: `GET /api/tags`
+- [x] `ListModels`: `GET /api/tags`
+- [x] `Chat`: `POST /api/chat`
+- [x] `ChatStream`: `POST /api/chat` stream=true, SSE parsing
+- [x] Model pulling: `POST /api/pull` with progress
+- [x] Embeddings: `POST /api/embeddings`
+- [x] Error: connection refused → "Ollama not running"
+- [x] Error: model not found → "Pull model from model manager"
+- [x] Test: Chat returns expected response
+- [x] Test: ChatStream emits deltas
 
 ### 5.4 OpenAI Provider
 
-- [ ] Endpoint: `https://api.openai.com/v1`
-- [ ] Auth: Bearer token
-- [ ] Models: GPT-4o, GPT-4o-mini, o1, o3-mini
-- [ ] `Chat`: `POST /v1/chat/completions`
-- [ ] `ChatStream` with `stream: true`, SSE `data:` lines
-- [ ] Tool calling (native OpenAI format)
+- [x] Endpoint: `https://api.openai.com/v1`
+- [x] Auth: Bearer token
+- [x] Models: GPT-4o, GPT-4o-mini, o1, o3-mini
+- [x] `Chat`: `POST /v1/chat/completions`
+- [x] `ChatStream` with `stream: true`, SSE `data:` lines
+- [x] Tool calling (native OpenAI format)
 - [ ] Structured output (`response_format`)
 - [ ] Vision (image_url in messages)
-- [ ] Token counting via `tiktoken-go`
-- [ ] Cost tracking via lookup table
-- [ ] Rate limit backoff on 429
-- [ ] Error: 401 → "Invalid API key"
-- [ ] Error: 429 → "Rate limited. Retry in X seconds"
-- [ ] Test: Chat returns response
-- [ ] Test: ChatStream emits SSE
-- [ ] Test: tool calling returns tool_calls
+- [x] Token counting via `tiktoken-go`
+- [x] Cost tracking via lookup table
+- [x] Rate limit backoff on 429
+- [x] Error: 401 → "Invalid API key"
+- [x] Error: 429 → "Rate limited. Retry in X seconds"
+- [x] Test: Chat returns response
+- [x] Test: ChatStream emits SSE
+- [x] Test: tool calling returns tool_calls
 
 ### 5.5 Anthropic Provider
 
@@ -1274,73 +1274,73 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 5.11 Multi-Model Router
 
-- [ ] `Router` struct with providers + rules
-- [ ] Routing rules: intent, content, tool
-- [ ] Default: chat→local, code→cloud, reasoning→cloud
-- [ ] Intent detection: analyze user message keywords
-- [ ] Explicit agent model bypasses routing
-- [ ] Per-message model override
-- [ ] Priority ordering
-- [ ] Test: route by intent
-- [ ] Test: explicit config bypasses routing
-- [ ] Test: no match → default
+- [x] `Router` struct with providers + rules
+- [x] Routing rules: intent, content, tool
+- [x] Default: chat→local, code→cloud, reasoning→cloud
+- [x] Intent detection: analyze user message keywords
+- [x] Explicit agent model bypasses routing
+- [x] Per-message model override
+- [x] Priority ordering
+- [x] Test: route by intent
+- [x] Test: explicit config bypasses routing
+- [x] Test: no match → default
 
 ### 5.12 Model Fallback Chains
 
-- [ ] Configurable per agent
-- [ ] Try first, on failure try next
-- [ ] Triggers: 5xx, timeout, rate limit, connection failure
-- [ ] All fail → return last error
-- [ ] Each fallback logged in audit log
-- [ ] Test: fallback on 5xx
-- [ ] Test: fallback on timeout
-- [ ] Test: all fail returns error
+- [x] Configurable per agent
+- [x] Try first, on failure try next
+- [x] Triggers: 5xx, timeout, rate limit, connection failure
+- [x] All fail → return last error
+- [x] Each fallback logged in audit log
+- [x] Test: fallback on 5xx
+- [x] Test: fallback on timeout
+- [x] Test: all fail returns error
 
 ### 5.13 Streaming
 
-- [ ] SSE parsing for all providers
-- [ ] Events via Wails `EventsEmit`
-- [ ] Types: token, tool_call_start, tool_call_end, done, error
-- [ ] WebSocket support for API clients
-- [ ] Svelte subscribes to stream events
-- [ ] Test: stream emits token events
-- [ ] Test: stream emits done with usage
+- [x] SSE parsing for all providers
+- [x] Events via Wails `EventsEmit`
+- [x] Types: token, tool_call_start, tool_call_end, done, error
+- [x] WebSocket support for API clients
+- [x] Svelte subscribes to stream events
+- [x] Test: stream emits token events
+- [x] Test: stream emits done with usage
 
 ### 5.14 Token Usage Tracking
 
-- [ ] Per-message: tokens_in, tokens_out
-- [ ] Per-session: cumulatives
-- [ ] Per-provider cost lookup table
-- [ ] Cost=0 for local providers
+- [x] Per-message: tokens_in, tokens_out
+- [x] Per-session: cumulatives
+- [x] Per-provider cost lookup table
+- [x] Cost=0 for local providers
 - [ ] Dashboard: daily/weekly/monthly charts
 - [ ] Test: token counting accurate within 5%
 - [ ] Test: cost matches pricing table
 
 ### 5.15 Context Window Management
 
-- [ ] Strategies: sliding_window, summarization, truncation
-- [ ] Sliding window: keep last N (default 50)
-- [ ] Always keep system prompt + latest 2
-- [ ] Summarization: model summarizes older messages
-- [ ] Truncation: hard truncate at max context
-- [ ] Warning at 80% (yellow) and 95% (red)
-- [ ] Test: sliding window drops oldest correctly
-- [ ] Test: summarization produces coherent summary
-- [ ] Test: truncation preserves newest
+- [x] Strategies: sliding_window, summarization, truncation
+- [x] Sliding window: keep last N (default 50)
+- [x] Always keep system prompt + latest 2
+- [x] Summarization: model summarizes older messages
+- [x] Truncation: hard truncate at max context
+- [x] Warning at 80% (yellow) and 95% (red)
+- [x] Test: sliding window drops oldest correctly
+- [x] Test: summarization produces coherent summary
+- [x] Test: truncation preserves newest
 
 ### 5.16 Safety-Aware Model Router
 
-- [ ] Extends base router with safety-awareness
-- [ ] Pre-route classification: analyze query for safety-sensitive content
+- [x] Extends base router with safety-awareness
+- [x] Pre-route classification: analyze query for safety-sensitive content
 - [ ] Classification categories: safe, security, code, creative, sensitive, unknown
 - [ ] Query classification via lightweight model or rule-based detector
-- [ ] Detected "security" topic → prefer uncensored/abliterated model
-- [ ] Detected "code" topic → prefer code-specialized model
-- [ ] Detected "creative" → prefer high-temperature model
-- [ ] Routing decisions overridable by user preference
-- [ ] Per-agent safety routing config
-- [ ] Test: security query routes to uncensored model
-- [ ] Test: code query routes to code model
+- [x] Detected "security" topic → prefer uncensored/abliterated model
+- [x] Detected "code" topic → prefer code-specialized model
+- [x] Detected "creative" → prefer high-temperature model
+- [x] Routing decisions overridable by user preference
+- [x] Per-agent safety routing config
+- [x] Test: security query routes to uncensored model
+- [x] Test: code query routes to code model
 
 ### 5.17 Refusal Detection & Response Classification
 
@@ -4557,33 +4557,33 @@ CREATE INDEX idx_hooks_enabled ON system_hooks(enabled);
 
 ### 26.1 Package: internal/agent
 
-- [ ] `type Agent struct`
-- [ ] `type Session struct`
-- [ ] `type Message struct`
-- [ ] `type ToolCall struct`
-- [ ] `type ToolResult struct`
-- [ ] `type ModelConfig struct`
-- [ ] `type MemoryConfig struct`
-- [ ] `type ToolBinding struct`
-- [ ] `type Manager struct`
+- [x] `type Agent struct`
+- [x] `type Session struct`
+- [x] `type Message struct`
+- [x] `type ToolCall struct`
+- [x] `type ToolResult struct`
+- [x] `type ModelConfig struct`
+- [x] `type MemoryConfig struct`
+- [x] `type ToolBinding struct`
+- [x] `type Manager struct`
 
 ### 26.2 Package: internal/model
 
-- [ ] `type Provider interface`
-- [ ] `type Router struct`
-- [ ] `type ChatRequest struct`
-- [ ] `type ChatResponse struct`
-- [ ] `type StreamDelta struct`
-- [ ] `type Parameters struct`
-- [ ] `type TokenUsage struct`
-- [ ] `type ModelInfo struct`
-- [ ] `type FallbackChain struct`
-- [ ] `type SafetyAwareRouter struct`
-- [ ] `type SafetyClassifier struct`
-- [ ] `type RefusalDetector struct`
-- [ ] `type RefusalResult struct`
-- [ ] `type SafetyLevel string`
-- [ ] `type ModelSwitchEvent struct`
+- [x] `type Provider interface`
+- [x] `type Router struct`
+- [x] `type ChatRequest struct`
+- [x] `type ChatResponse struct`
+- [x] `type StreamDelta struct`
+- [x] `type Parameters struct`
+- [x] `type TokenUsage struct`
+- [x] `type ModelInfo struct`
+- [x] `type FallbackChain struct`
+- [x] `type SafetyAwareRouter struct`
+- [x] `type SafetyClassifier struct`
+- [x] `type RefusalDetector struct`
+- [x] `type RefusalResult struct`
+- [x] `type SafetyLevel string`
+- [x] `type ModelSwitchEvent struct`
 
 ### 26.3 Package: internal/tool
 

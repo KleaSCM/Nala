@@ -31,9 +31,10 @@ type Engine struct {
 	Logger *logger.Logger
 	DB     *sql.DB
 
-	cancel    context.CancelFunc
-	wg        sync.WaitGroup
-	onFatal   func(msg string) // hook for testing
+	cancel        context.CancelFunc
+	sigWg         sync.WaitGroup
+	onFatal       func(msg string)
+	shutdownDelay time.Duration // for testing — simulates slow cleanup
 }
 
 func (e *Engine) SetOnFatal(fn func(msg string)) {
@@ -80,9 +81,9 @@ func (e *Engine) Start() error {
 		"log_level", e.Config.Core.LogLevel,
 	)
 
-	e.wg.Add(1)
+	e.sigWg.Add(1)
 	go func() {
-		defer e.wg.Done()
+		defer e.sigWg.Done()
 		e.handleSignals(ctx)
 	}()
 
@@ -98,7 +99,7 @@ func (e *Engine) handleSignals(ctx context.Context) {
 		e.Logger.Info("signal received, starting graceful shutdown",
 			"signal", sig.String(),
 		)
-		e.Shutdown(30 * time.Second)
+		go e.Shutdown(30 * time.Second)
 	case <-ctx.Done():
 	}
 }
@@ -114,7 +115,11 @@ func (e *Engine) Shutdown(timeout time.Duration) {
 			e.cancel()
 		}
 
-		e.wg.Wait()
+		e.sigWg.Wait()
+
+		if e.shutdownDelay > 0 {
+			time.Sleep(e.shutdownDelay)
+		}
 
 		config.StopWatcher()
 
